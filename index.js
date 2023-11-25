@@ -146,6 +146,7 @@ async function run() {
         const result = await userCollection.find().toArray()
         res.send(result)
       })
+      // make admin 
       app.get('/users/admin/:email', verifyToken, async(req,res) => {
         const email = req.params.email
         if(email !== req.decoded.email){
@@ -158,6 +159,20 @@ async function run() {
           admin = user.role === 'admin'
         }
         res.send({admin})
+      })
+      // make moderator 
+      app.get('/users/moderator/:email', verifyToken, async(req,res) => {
+        const email = req.params.email
+        if(email !== req.decoded.email){
+          return res.status(403).send({message : 'unathorized access'})
+        }
+        const query = {email : email}
+        const user = await userCollection.findOne(query)
+        let moderator = false
+        if(user){
+          moderator = user.mode === 'moderator'
+        }
+        res.send({moderator})
       })
       app.post('/users', async(req,res) => {
         const user = req.body
