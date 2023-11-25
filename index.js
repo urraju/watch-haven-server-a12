@@ -26,8 +26,9 @@ async function run() {
   try {
      
     const   userCollection = client.db('watchDB').collection('users')
-    const  watchCollection = client.db('watchDB').collection('watch')
+    const   watchCollection = client.db('watchDB').collection('watch')
     const   reviewCollection = client.db('watchDB').collection('review')
+    const    reportCollection = client.db('watchDB').collection('report')
      
 
     // user part 
@@ -126,6 +127,17 @@ async function run() {
       })
       app.get('/review', async(req,res) => {
         const result = await reviewCollection.find().toArray()
+        res.send(result)
+      })
+
+      // report part data get post 
+       app.post('/report', async(req,res) => {
+        const query = req.body
+        const result = await reportCollection.insertOne(query)
+        res.send(result)
+       })
+       app.get('/report', async(req,res) => {
+        const result = await reportCollection.find().toArray()
         res.send(result)
       })
       
