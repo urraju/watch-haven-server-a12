@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express')
 require('dotenv').config()
 const cors = require('cors');
@@ -69,6 +69,18 @@ async function run() {
         next()
       }
   
+  
+      const verifyModerator = async (req,res, next)=> {
+        const email = req.decoded.email
+        const query = {email : email};
+        const user = await userCollection.findOne(query)
+        const isModerator = user?.mode === 'moderator'
+        if(!isModerator){
+          return res.status(403).send({message : 'forbidden access'})
+        }
+        next()
+      }
+  
       // user part 
      
       app.delete('/users/:id', verifyToken,verifyAdmin, async (req, res) => {
@@ -78,12 +90,25 @@ async function run() {
         res.send(result);
       })
   
+      // make admin part 
       app.patch('/users/admin/:id', async(req,res) => {
         const id = req.params.id
         const filter = {_id: new ObjectId(id)}
         const updatedDoc = {
           $set : {
             role : 'admin'
+          }
+        }
+        const result = await userCollection.updateOne(filter,updatedDoc)
+        res.send(result)
+      })
+      // make moderator part 
+      app.put('/users/mode/:id', async(req,res) => {
+        const id = req.params.id
+        const filter = {_id: new ObjectId(id)}
+        const updatedDoc = {
+          $set : {
+            mode : 'moderator'
           }
         }
         const result = await userCollection.updateOne(filter,updatedDoc)
@@ -123,7 +148,7 @@ async function run() {
         res.send(result)
       })
 
-
+//  all data load part 
 
     app.get('/watch', async(req,res) => {
         const result = await watchCollection.find().toArray()
