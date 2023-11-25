@@ -27,6 +27,7 @@ async function run() {
      
     const   userCollection = client.db('watchDB').collection('users')
     const  watchCollection = client.db('watchDB').collection('watch')
+    const   reviewCollection = client.db('watchDB').collection('review')
      
 
     // user part 
@@ -84,7 +85,7 @@ async function run() {
   
       // user part 
      
-      app.delete('/users/:id', verifyToken,verifyAdmin, async (req, res) => {
+      app.delete('/users/:id', verifyToken,verifyAdmin, verifyModerator, async (req, res) => {
         const id = req.params.id;
         const query = { _id: new ObjectId(id) }
         const result = await userCollection.deleteOne(query);
@@ -115,8 +116,20 @@ async function run() {
         const result = await userCollection.updateOne(filter,updatedDoc)
         res.send(result)
       })
+
+      // review part 
+
+      app.post('/review', async(req,res) => {
+        const query = req.body
+        const result = await reviewCollection.insertOne(query)
+        res.send(result)
+      })
+      app.get('/review', async(req,res) => {
+        const result = await reviewCollection.find().toArray()
+        res.send(result)
+      })
       
-      app.get('/users', verifyToken, verifyAdmin,async(req,res) => {
+      app.get('/users', verifyToken, verifyAdmin,verifyModerator,async(req,res) => {
          console.log(req.headers);
         const result = await userCollection.find().toArray()
         res.send(result)
