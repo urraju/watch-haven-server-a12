@@ -44,6 +44,7 @@ async function run() {
           return res.status(401).send({message : 'forbidden access'})
         }
         const token = req.headers.authorization.split(' ')[1]
+        console.log(token);
         if(!token){
           return res.status(401).send({message : 'forbidden access'})
         }
@@ -155,12 +156,16 @@ async function run() {
          
         res.send(result)
     })
-    app.patch('/update', async (req, res) => {
+    app.get('/watch/:id', async(req,res) => {
+        const id = req.params.id
+        const filter = {_id : id}
+        const result = await watchCollection.findOne(filter)
+        res.send(result)
+    })
+    app.patch('/watch/update', async (req, res) => {
         const id = req.query.id;
         console.log(id);
-        const filter = {
-            _id: new ObjectId(id)
-        }
+        const filter = {_id: id}
          
        
         const pathData = {
@@ -169,6 +174,7 @@ async function run() {
             }
         };
         const result = await watchCollection.updateOne(filter, pathData);
+        console.log(result);
         res.send(result)
     })
    
