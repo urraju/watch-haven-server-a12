@@ -120,28 +120,8 @@ async function run() {
 
       // review part 
 
-      app.post('/review', async(req,res) => {
-        const query = req.body
-        const result = await reviewCollection.insertOne(query)
-        res.send(result)
-      })
-      app.get('/review', async(req,res) => {
-        const result = await reviewCollection.find().toArray()
-        res.send(result)
-      })
-
-      // report part data get post 
-       app.post('/report', async(req,res) => {
-        const query = req.body
-        const result = await reportCollection.insertOne(query)
-        res.send(result)
-       })
-       app.get('/report', async(req,res) => {
-        const result = await reportCollection.find().toArray()
-        res.send(result)
-      })
       
-      app.get('/users', verifyToken, verifyAdmin,verifyModerator,async(req,res) => {
+      app.get('/users', verifyToken, verifyAdmin,  async(req,res) => {
          console.log(req.headers);
         const result = await userCollection.find().toArray()
         res.send(result)
@@ -186,6 +166,51 @@ async function run() {
   
   
         const result = await userCollection.insertOne(user)
+        res.send(result)
+      })
+
+      
+      app.post('/review', async(req,res) => {
+        const query = req.body
+        const result = await reviewCollection.insertOne(query)
+        res.send(result)
+      })
+      app.get('/review', verifyToken ,verifyAdmin,  async(req,res) => {
+        const result = await reviewCollection.find().toArray()
+        res.send(result)
+      })
+      // review status reject or accepted part
+      app.patch('/review/status2/:id', async(req,res) => {
+        const id = req.params.id
+        const filter = {_id: new ObjectId(id)}
+        const updatedDoc = {
+          $set : {
+            status2 : 'accepted'
+          }
+        }
+        const result = await reviewCollection.updateOne(filter,updatedDoc)
+        res.send(result)
+      })
+      app.put('/review/status3/:id', async(req,res) => {
+        const id = req.params.id
+        const filter = {_id: new ObjectId(id)}
+        const updatedDoc = {
+          $set : {
+            status3 : 'rejected'
+          }
+        }
+        const result = await reviewCollection.updateOne(filter,updatedDoc)
+        res.send(result)
+      })
+
+      // report part data get post 
+       app.post('/report', verifyToken, async(req,res) => {
+        const query = req.body
+        const result = await reportCollection.insertOne(query)
+        res.send(result)
+       })
+       app.get('/report',  verifyToken,verifyAdmin, async(req,res) => {
+        const result = await reportCollection.find().toArray()
         res.send(result)
       })
 
