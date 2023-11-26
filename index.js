@@ -57,15 +57,19 @@ async function run() {
   
           }
           req.decoded = decoded
+          console.log(decoded);
           next()
         })
       }
   
       const verifyAdmin = async (req,res, next)=> {
         const email = req.decoded.email
+        console.log(email);
         const query = {email : email};
         const user = await userCollection.findOne(query)
+        console.log(user);
         const isAdmin = user?.role === 'admin'
+        console.log(isAdmin);
         if(!isAdmin){
           return res.status(403).send({message : 'forbidden access'})
         }
@@ -175,7 +179,7 @@ async function run() {
         const result = await reviewCollection.insertOne(query)
         res.send(result)
       })
-      app.get('/review', verifyToken ,verifyAdmin,  async(req,res) => {
+      app.get('/review', verifyToken, verifyModerator,  async(req,res) => {
         const result = await reviewCollection.find().toArray()
         res.send(result)
       })
@@ -204,20 +208,35 @@ async function run() {
       })
 
       // report part data get post 
-       app.post('/report', verifyToken, async(req,res) => {
+       app.post('/report',  async(req,res) => {
         const query = req.body
         const result = await reportCollection.insertOne(query)
         res.send(result)
        })
-       app.get('/report',  verifyToken,verifyAdmin, async(req,res) => {
+       app.get('/report',  verifyToken, verifyModerator, async(req,res) => {
         const result = await reportCollection.find().toArray()
         res.send(result)
+      })
+       app.delete('/report/:id',  verifyToken,verifyModerator, async(req,res) => {
+         const id = req.params.id
+         const filter = {_id : new ObjectId(id)}
+         
+         const result = await reportCollection.deleteOne(filter)
+         const query = {_id : id}
+         const deleted = await watchCollection.deleteOne(query)
+         res.send({result,deleted})
       })
 
 //  all data load part 
 
     app.get('/watch', async(req,res) => {
-        const result = await watchCollection.find().toArray()
+        const filter = req.query
+        console.log(filter);
+        const query = {
+            tags : {$regex : filter.search || ''}
+        }
+        
+        const result = await watchCollection.find(query).toArray()
          
         res.send(result)
     })
@@ -225,6 +244,7 @@ async function run() {
         const id = req.params.id
         const filter = {_id : id}
         const result = await watchCollection.findOne(filter)
+        console.log(result);
         res.send(result)
     })
     app.patch('/watch/update', async (req, res) => {
