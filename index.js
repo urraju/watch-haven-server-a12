@@ -47,7 +47,7 @@ async function run() {
           return res.status(401).send({message : 'forbidden access'})
         }
         const token = req.headers.authorization.split(' ')[1]
-        console.log(token);
+        // console.log(token);
         if(!token){
           return res.status(401).send({message : 'forbidden access'})
         }
@@ -58,17 +58,17 @@ async function run() {
   
           }
           req.decoded = decoded
-          console.log(decoded);
+          // console.log(decoded);
           next()
         })
       }
   
       const verifyAdmin = async (req,res, next)=> {
         const email = req.decoded.email
-        console.log(email);
+         
         const query = {email : email};
         const user = await userCollection.findOne(query)
-        console.log(user);
+         
         const isAdmin = user?.role === 'admin'
         console.log(isAdmin);
         if(!isAdmin){
@@ -127,7 +127,7 @@ async function run() {
 
       
       app.get('/users', verifyToken, verifyAdmin,  async(req,res) => {
-         console.log(req.headers);
+          
         const result = await userCollection.find().toArray()
         res.send(result)
       })
@@ -180,7 +180,7 @@ async function run() {
         const result = await reviewCollection.insertOne(query)
         res.send(result)
       })
-      app.get('/review',  async(req,res) => {
+      app.get('/review', verifyToken, verifyModerator, async(req,res) => {
         const result = await reviewCollection.find().toArray()
         res.send(result)
       })
@@ -221,10 +221,7 @@ async function run() {
        app.delete('/report/:id',  verifyToken,verifyModerator, async(req,res) => {
          const id = req.params.id
          const filter = {_id : new ObjectId(id)}
-         
          const result = await reportCollection.deleteOne(filter)
-         const query = {_id : id}
-         const deleted = await watchCollection.deleteOne(query)
          res.send({result,deleted})
       })
 
@@ -234,9 +231,52 @@ async function run() {
         const result = await postedCollection.insertOne(query)
         res.send(result)
       })
-      app.get('/postProduct', async(req,res) => {
-         const result = await postedCollection.find().toArray()
+      app.get('/postProduct', verifyToken, async(req,res) => {
+ 
+        let query = {}
+        if(req.query?.email){
+          query = {owner_email : req.query.email}
+        }
+        console.log('hello',req.query);
+        console.log('hello' );
+         const result = await postedCollection.find(query).toArray()
          res.send(result)
+      })
+
+      // post data update function 
+
+
+      app.patch('/postProduct/status/:id', async(req,res) => {
+        const id = req.params.id
+        const filter = {_id: new ObjectId(id)}
+        const updatedDoc = {
+          $set : {
+            status : 'accepted'
+          }
+        }
+        const result = await postedCollection.updateOne(filter,updatedDoc)
+        res.send(result)
+      })
+      app.put('/postProduct/status2/:id', async(req,res) => {
+        const id = req.params.id
+        const filter = {_id: new ObjectId(id)}
+        const updatedDoc = {
+          $set : {
+            status2 : 'rejected'
+          }
+        }
+        const result = await postedCollection.updateOne(filter,updatedDoc)
+        res.send(result)
+      })
+
+
+
+      app.delete('/postProduct/:id',  async (req, res) => {
+        const id = req.params.id;
+        console.log('deleted',id);
+        const query = { _id: new ObjectId(id) }
+        const result = await postedCollection.deleteOne(query);
+        res.send(result);
       })
 
 
