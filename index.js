@@ -29,6 +29,7 @@ async function run() {
     const   watchCollection = client.db('watchDB').collection('watch')
     const   reviewCollection = client.db('watchDB').collection('review')
     const    reportCollection = client.db('watchDB').collection('report')
+    const    postedCollection = client.db('watchDB').collection('postProduct')
      
 
     // user part 
@@ -179,7 +180,7 @@ async function run() {
         const result = await reviewCollection.insertOne(query)
         res.send(result)
       })
-      app.get('/review', verifyToken, verifyModerator,  async(req,res) => {
+      app.get('/review',  async(req,res) => {
         const result = await reviewCollection.find().toArray()
         res.send(result)
       })
@@ -227,6 +228,18 @@ async function run() {
          res.send({result,deleted})
       })
 
+      // posted data part 
+      app.post('/postProduct', async(req,res) => {
+        const query = req.body
+        const result = await postedCollection.insertOne(query)
+        res.send(result)
+      })
+      app.get('/postProduct', async(req,res) => {
+         const result = await postedCollection.find().toArray()
+         res.send(result)
+      })
+
+
 //  all data load part 
 
     app.get('/watch', async(req,res) => {
@@ -239,6 +252,12 @@ async function run() {
         const result = await watchCollection.find(query).toArray()
          
         res.send(result)
+    })
+
+    app.post('/watch', async(req,res) => {
+      const query = req.body
+      const result = await watchCollection.insertOne(query)
+      res.send(result)
     })
     app.get('/watch/:id', async(req,res) => {
         const id = req.params.id
