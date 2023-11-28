@@ -181,7 +181,7 @@ async function run() {
         const result = await reviewCollection.insertOne(query)
         res.send(result)
       })
-      app.get('/review', verifyToken, verifyModerator, async(req,res) => {
+      app.get('/review', verifyToken,  async(req,res) => {
         const result = await reviewCollection.find().toArray()
         res.send(result)
       })
@@ -358,6 +358,16 @@ async function run() {
         const result = await watchCollection.updateOne(filter, pathData);
         console.log(result);
         res.send(result)
+    })
+
+     // status or analytics 
+     app.get('/admin-status', verifyToken, verifyAdmin, async(req,res) => {
+      const users = await userCollection.estimatedDocumentCount()
+      const product = await watchCollection.estimatedDocumentCount()
+      const post = await postedCollection.estimatedDocumentCount()
+      const review = await reviewCollection.estimatedDocumentCount()
+       
+      res.send({users, product, post,review})
     })
    
     await client.db("admin").command({ ping: 1 });
