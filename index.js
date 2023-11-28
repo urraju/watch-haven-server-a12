@@ -31,6 +31,7 @@ async function run() {
     const    reportCollection = client.db('watchDB').collection('report')
     const    postedCollection = client.db('watchDB').collection('postProduct')
     const    paymantCollection = client.db('watchDB').collection('paymants')
+    const    couponCollection = client.db('watchDB').collection('coupon')
      
 
     // user part 
@@ -307,6 +308,17 @@ async function run() {
       })
     })
       
+
+    // couponCollection part 
+    app.post('/coupon', async(req,res) => {
+      const query = req.body
+      const result = await couponCollection.insertOne(query)
+      res.send(result)
+    })
+    app.get('/coupon', async(req,res) => {
+      const result = await couponCollection.find().toArray()
+      res.send(result)
+    })
 
 
 //  all data load part 
