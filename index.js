@@ -30,6 +30,7 @@ async function run() {
     const   reviewCollection = client.db('watchDB').collection('review')
     const    reportCollection = client.db('watchDB').collection('report')
     const    postedCollection = client.db('watchDB').collection('postProduct')
+    const    paymantCollection = client.db('watchDB').collection('paymants')
      
 
     // user part 
@@ -280,6 +281,18 @@ async function run() {
       })
 
 
+      // paymant api 
+      app.post('/paymant', async(req,res) => {
+        const query = req.body
+        const result = await paymantCollection.insertOne(query)
+        res.send(result)
+      })
+      app.get('/paymant', async(req,res) => {
+        const result = await paymantCollection.find().toArray()
+        res.send(result)
+      })
+
+
 //  all data load part 
 
     app.get('/watch', async(req,res) => {
@@ -288,7 +301,6 @@ async function run() {
         const query = {
             tags : {$regex : filter.search || ''}
         }
-        
         const result = await watchCollection.find(query).toArray()
          
         res.send(result)
