@@ -282,26 +282,47 @@ async function run() {
 
 
       // paymant api 
-      app.post('/paymant', async(req,res) => {
+      app.post('/paymants', async(req,res) => {
         const query = req.body
         const result = await paymantCollection.insertOne(query)
         res.send(result)
       })
-      app.get('/paymant', async(req,res) => {
+      app.get('/paymants', async(req,res) => {
         const result = await paymantCollection.find().toArray()
         res.send(result)
       })
+
+      // payment intent part 
+    app.post('/create-payment-intent', async(req,res) => {
+      const {price} = req.body
+      const amount = parseInt(price)*100
+      console.log(amount  , 'price inside the intant');
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount : amount,
+        currency : 'usd',
+        payment_method_types : ['card']
+      })
+      res.send({
+        clientSecret : paymentIntent.client_secret
+      })
+    })
+      
 
 
 //  all data load part 
 
     app.get('/watch', async(req,res) => {
+      const page = parseInt(req.query.page)
+      const size = parseInt(req.query.size)
         const filter = req.query
         console.log(filter);
         const query = {
             tags : {$regex : filter.search || ''}
         }
-        const result = await watchCollection.find(query).toArray()
+        const result = await watchCollection.find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray()
          
         res.send(result)
     })
@@ -310,6 +331,11 @@ async function run() {
       const query = req.body
       const result = await watchCollection.insertOne(query)
       res.send(result)
+    })
+    app.get('/watchCount', async(req,res) => {
+      const count = await watchCollection.estimatedDocumentCount()
+      res.send({count})
+       
     })
     app.get('/watch/:id', async(req,res) => {
         const id = req.params.id
