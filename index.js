@@ -415,7 +415,21 @@ async function run() {
 
       const pathData = {
         $inc: {
-          vote: +1,
+          vote: + 1,
+        },
+      };
+      const result = await watchCollection.updateOne(filter, pathData);
+      console.log(result);
+      res.send(result);
+    });
+    app.put("/watch/updateVote", async (req, res) => {
+      const id = req.query.id2;
+      console.log(id);
+      const filter = { _id: id };
+
+      const pathData = {
+        $inc: {
+          vote: + 1,
         },
       };
       const result = await watchCollection.updateOne(filter, pathData);
