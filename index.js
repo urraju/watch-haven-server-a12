@@ -236,33 +236,41 @@ async function run() {
       const result = await postedCollection.insertOne(query);
       res.send(result);
     });
-    app.get("/postProduct", verifyToken, async (req, res) => {
+    app.get("/postProduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id)};
+      const result = await postedCollection.findOne(filter);
+      console.log(result);
+      res.send(result);
+    });
+    app.get("/postProduct",verifyToken, async (req, res) => {
       let query = {};
       if (req.query?.email) {
         query = { owner_email: req.query.email };
       }
-      console.log("hello", req.query);
-      console.log("hello");
+       
       const result = await postedCollection.find(query).toArray();
       res.send(result);
     });
 
     // post data update function
 
-    app.patch("/coupon/:id", async (req, res) => {
+    app.put("/postProduct/updateProduct/:id", async (req, res) => {
       const id = req.params.id;
 
       const query = { _id: new ObjectId(id) };
       const body = req.body;
       const updatedDoc = {
         $set: {
-          coupon_code: body.coupon_code,
-          expire_date: body.coupon_date,
-          code_description: body.code_description,
-          discount_amount:  body.discount_amount,
+          product_name:  body.product_name,
+          product_image: body.product_image,
+          description:  body.description,
+          external_links: body.external_links,
+          tags: body.tags,
+          
         },
       };
-      const result = await couponCollection.updateOne(query, updatedDoc);
+      const result = await postedCollection.updateOne(query, updatedDoc);
       res.send(result);
     });
 
