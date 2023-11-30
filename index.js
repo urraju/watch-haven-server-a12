@@ -7,7 +7,10 @@ const app = express();
 const stripe = require("stripe")(process.env.STRIP_SECRET);
 const port = process.env.PORT || 2000;
 
-app.use(cors());
+app.use(cors({
+  origin : ['https://assignmant-12.web.app','https://assignmant-12.firebaseapp.com','http://localhost:5173'],
+  credentials : true
+}))
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.zrkwx23.mongodb.net/?retryWrites=true&w=majority`;
@@ -163,14 +166,7 @@ async function run() {
     });
     app.post("/users", async (req, res) => {
       const user = req.body;
-      // insert email is user doenst exist : part
-
-      // const query = { email: user.email };
-      // const existingUser = await userCollection.findOne(query);
-      // if (existingUser) {
-      //   return res.send({ Message: "user already Exisit", insertedId: null });
-      // }
-
+       
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
