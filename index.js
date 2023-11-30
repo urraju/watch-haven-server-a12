@@ -165,11 +165,11 @@ async function run() {
       const user = req.body;
       // insert email is user doenst exist : part
 
-      const query = { email: user.email };
-      const existingUser = await userCollection.findOne(query);
-      if (existingUser) {
-        return res.send({ Message: "user already Exisit", insertedId: null });
-      }
+      // const query = { email: user.email };
+      // const existingUser = await userCollection.findOne(query);
+      // if (existingUser) {
+      //   return res.send({ Message: "user already Exisit", insertedId: null });
+      // }
 
       const result = await userCollection.insertOne(user);
       res.send(result);
@@ -238,17 +238,17 @@ async function run() {
     });
     app.get("/postProduct/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
       const result = await postedCollection.findOne(filter);
       console.log(result);
       res.send(result);
     });
-    app.get("/postProduct",verifyToken, async (req, res) => {
+    app.get("/postProduct", verifyToken, async (req, res) => {
       let query = {};
       if (req.query?.email) {
         query = { owner_email: req.query.email };
       }
-       
+
       const result = await postedCollection.find(query).toArray();
       res.send(result);
     });
@@ -262,18 +262,16 @@ async function run() {
       const body = req.body;
       const updatedDoc = {
         $set: {
-          product_name:  body.product_name,
+          product_name: body.product_name,
           product_image: body.product_image,
-          description:  body.description,
+          description: body.description,
           external_links: body.external_links,
           tags: body.tags,
-          
         },
       };
       const result = await postedCollection.updateOne(query, updatedDoc);
       res.send(result);
     });
-
 
     app.patch("/postProduct/status/:id", async (req, res) => {
       const id = req.params.id;
@@ -297,6 +295,21 @@ async function run() {
       const result = await postedCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
+
+    // add features product
+    app.put("/postProduct/addFeature/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          featured: true,
+        },
+      };
+      const result = await postedCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    // delete function
 
     app.delete("/postProduct/:id", async (req, res) => {
       const id = req.params.id;
@@ -338,14 +351,23 @@ async function run() {
       const result = await couponCollection.insertOne(query);
       res.send(result);
     });
-    app.get("/coupon", verifyToken,  async (req, res) => {
+    app.get("/coupon", async (req, res) => {
       const result = await couponCollection.find().toArray();
       res.send(result);
     });
-    app.get("/coupon/:id" ,  async (req, res) => {
+    app.get("/coupon/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
       const result = await couponCollection.findOne(filter);
+      console.log(result);
+      res.send(result);
+    });
+    app.get("/getcoupon", async (req, res) => {
+      console.log(req.query);
+      const coupon = req.query.code;
+      const filter = { coupon_code: coupon };
+      console.log("filter", filter);
+      const result = await couponCollection.find(filter).toArray();
       console.log(result);
       res.send(result);
     });
@@ -366,7 +388,7 @@ async function run() {
           coupon_code: body.coupon_code,
           expire_date: body.coupon_date,
           code_description: body.code_description,
-          discount_amount:  body.discount_amount,
+          discount_amount: body.discount_amount,
         },
       };
       const result = await couponCollection.updateOne(query, updatedDoc);
@@ -415,7 +437,7 @@ async function run() {
 
       const pathData = {
         $inc: {
-          vote: + 1,
+          vote: +1,
         },
       };
       const result = await watchCollection.updateOne(filter, pathData);
@@ -429,7 +451,7 @@ async function run() {
 
       const pathData = {
         $inc: {
-          vote: + 1,
+          vote: +1,
         },
       };
       const result = await watchCollection.updateOne(filter, pathData);
